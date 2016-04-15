@@ -202,8 +202,13 @@ int hci_reassembly(struct hci_dev *hdev, int type, void *data,
 				print_event(skb);
 
 			bt_cb(skb)->pkt_type = type;
-			hci_recv_frame(hdev, skb);
 
+#if LINUX_VERSION_CODE > KERNEL_VERSION(3,4,104)
+			hci_recv_frame(hdev, skb);
+#else
+			skb->dev = (void *)hdev;
+			hci_recv_frame(skb);
+#endif
 			hdev->reassembly[index] = NULL;
 			return remain;
 		}
